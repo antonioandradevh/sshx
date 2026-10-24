@@ -1,0 +1,91 @@
+{
+  "settings": {
+    "defaultTheme": "local",
+    "glyphSet": "nerd",
+    "show": {
+      "banner": true,
+      "summary": true,
+      "clock": false,
+      "device": true,
+      "user": true,
+      "host": true,
+      "path": true,
+      "git": true,
+      "duration": true,
+      "exitCode": true
+    },
+    "prompt": {
+      "enabled": true,
+      "icons": true,
+      "iconParts": {
+        "device": true,
+        "user": false,
+        "path": false,
+        "git": false,
+        "duration": false,
+        "clock": false,
+        "exit": false
+      },
+      "deviceName": false,
+      "separator": "  ",
+      "arrowSpace": " ",
+      "multiline": true
+    },
+    "duration": {
+      "warnMs": 1500,
+      "slowMs": 5000,
+      "precision": 2
+    },
+    "path": {
+      "style": "smart",
+      "maxSegments": 4,
+      "homeAlias": "~",
+      "icons": false,
+      "directoryIcons": {
+        ".git": "\uf1d3",
+        ".ssh": "\uf084",
+        "aws": "\uf0ef",
+        "s3": "\uf1c0",
+        "node_modules": "\uf1b3",
+        "src": "\uf121",
+        "bin": "\uf085",
+        "config": "\uf013",
+        "Downloads": "\uf019",
+        "Documents": "\uf15c",
+        "Desktop": "\uf108",
+        "Pictures": "\uf03e",
+        "Music": "\uf001",
+        "Videos": "\uf03d",
+        "Projects": "\uf135",
+        "tmp": "\uf1f8"
+      }
+    },
+    "clock": {
+      "format": "HH:mm"
+    },
+    "terminal": {
+      "mode": "auto",
+      "title": true,
+      "resetOnExit": true,
+      "bannerWidth": 68
+    },
+    "detect": {
+      "probe": true,
+      "timeoutSeconds": 6,
+      "cacheDays": 30,
+      "strictHostKeys": false
+    },
+    "s3": {
+      "profile": null,
+      "region": null,
+      "endpointUrl": null,
+      "pageSize": 50
+    },
+    "remote": {
+      "shell": "bash",
+      "auto": true,
+      "rcPath": "~/.config/sshthemes/rc"
+    },
+    "icons": {}
+  }
+}

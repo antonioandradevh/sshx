@@ -1,0 +1,43 @@
+{
+  "sets": {
+    "emoji": {
+      "user": "\ud83d\udc64",
+      "host": "\ud83d\udda5",
+      "path": "\ud83d\udcc1",
+      "git": "\ud83c\udf3f",
+      "duration": "\u23f1",
+      "ok": "\u2713",
+      "fail": "\u2717",
+      "clock": "\ud83d\udd52",
+      "arrow": "\u276f",
+      "sep": "",
+      "badge": "\ud83d\udda5"
+    },
+    "nerd": {
+      "user": "\uf007",
+      "host": "\uf233",
+      "path": "\uf07b",
+      "git": "\uf126",
+      "duration": "\uf2f2",
+      "ok": "\uf00c",
+      "fail": "\uf00d",
+      "clock": "\uf017",
+      "arrow": "\uf105",
+      "sep": "\ue0b0",
+      "badge": "\uf120"
+    },
+    "ascii": {
+      "user": "u",
+      "host": "h",
+      "path": "dir",
+      "git": "git",
+      "duration": "t",
+      "ok": "ok",
+      "fail": "ERR",
+      "clock": "at",
+      "arrow": ">",
+      "sep": "|",
+      "badge": "linux"
+    }
+  }
+}

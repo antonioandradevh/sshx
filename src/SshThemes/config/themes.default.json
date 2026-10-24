@@ -1,0 +1,555 @@
+﻿{
+    "defaults":  {
+                     "label":  "Generic",
+                     "short":  "gen",
+                     "icon":  "🖥",
+                     "iconsNerd":  {
+
+                                   },
+                     "accent":  "#4CC2FF",
+                     "accent2":  "#89DDFF",
+                     "foreground":  "#E6E6E6",
+                     "background":  null,
+                     "cursor":  null,
+                     "badgeText":  "",
+                     "note":  "",
+                     "prompt":  {
+                                    "user":  null,
+                                    "host":  null,
+                                    "path":  "#D0D0D0",
+                                    "git":  "#8BE9FD",
+                                    "muted":  "#808080",
+                                    "durationFast":  "#50FA7B",
+                                    "durationWarn":  "#F1FA8C",
+                                    "durationSlow":  "#FF6B6B",
+                                    "exitOk":  "#50FA7B",
+                                    "exitFail":  "#FF6B6B"
+                                },
+                     "icons":  {
+
+                               },
+                     "detect":  {
+
+                                }
+                 },
+    "themes":  {
+                   "local":  {
+                                 "label":  "Local",
+                                 "short":  "local",
+                                 "icon":  "",
+                                 "accent":  "#4CC2FF",
+                                 "accent2":  "#89DDFF",
+                                 "badgeText":  "WINDOWS",
+                                 "note":  "Sessao local do Windows",
+                                 "iconsNerd":  {
+                                                   "badge":  ""
+                                               }
+                             },
+                   "debian":  {
+                                  "label":  "Debian",
+                                  "short":  "deb",
+                                  "icon":  "🌀",
+                                  "accent":  "#A81D33",
+                                  "accent2":  "#D70A53",
+                                  "foreground":  "#F8F8F2",
+                                  "badgeText":  "DEBIAN",
+                                  "note":  "Debian GNU/Linux",
+                                  "iconsNerd":  {
+                                                    "badge":  ""
+                                                },
+                                  "detect":  {
+                                                 "osIds":  [
+                                                               "debian"
+                                                           ],
+                                                 "idLike":  [
+                                                                "debian"
+                                                            ],
+                                                 "hostPatterns":  [
+                                                                      "(^|[-.])deb"
+                                                                  ]
+                                             },
+                                  "background":  "#1B0A0F",
+                                  "cursor":  "#D70A53"
+                              },
+                   "ubuntu":  {
+                                  "label":  "Ubuntu",
+                                  "short":  "ubu",
+                                  "icon":  "🟠",
+                                  "accent":  "#E95420",
+                                  "accent2":  "#FF8A50",
+                                  "foreground":  "#F8F8F2",
+                                  "badgeText":  "UBUNTU",
+                                  "note":  "Canonical Ubuntu",
+                                  "iconsNerd":  {
+                                                    "badge":  ""
+                                                },
+                                  "detect":  {
+                                                 "osIds":  [
+                                                               "ubuntu"
+                                                           ],
+                                                 "idLike":  [
+                                                                "debian"
+                                                            ],
+                                                 "hostPatterns":  [
+                                                                      "(^|[-.])ubuntu"
+                                                                  ]
+                                             },
+                                  "background":  "#1A0D06",
+                                  "cursor":  "#E95420"
+                              },
+                   "raspbian":  {
+                                    "label":  "Raspberry Pi OS",
+                                    "short":  "rpi",
+                                    "icon":  "🍓",
+                                    "accent":  "#C51A4A",
+                                    "accent2":  "#FF5C8A",
+                                    "foreground":  "#F8F8F2",
+                                    "badgeText":  "RASPBERRY",
+                                    "note":  "Raspberry Pi OS / Raspbian",
+                                    "iconsNerd":  {
+                                                      "badge":  ""
+                                                  },
+                                    "detect":  {
+                                                   "osIds":  [
+                                                                 "raspbian"
+                                                             ],
+                                                   "idLike":  [
+                                                                  "debian"
+                                                              ],
+                                                   "hostPatterns":  [
+                                                                        "(^|[-.])rasp"
+                                                                    ]
+                                               },
+                                    "background":  "#190810",
+                                    "cursor":  "#C51A4A"
+                                },
+                   "alpine":  {
+                                  "label":  "Alpine",
+                                  "short":  "alp",
+                                  "icon":  "🏔",
+                                  "accent":  "#0D597F",
+                                  "accent2":  "#2E8BC0",
+                                  "foreground":  "#F8F8F2",
+                                  "badgeText":  "ALPINE",
+                                  "note":  "Alpine Linux",
+                                  "iconsNerd":  {
+                                                    "badge":  ""
+                                                },
+                                  "detect":  {
+                                                 "osIds":  [
+                                                               "alpine"
+                                                           ],
+                                                 "idLike":  [
+                                                                "alpine"
+                                                            ],
+                                                 "hostPatterns":  [
+                                                                      "(^|[-.])alp"
+                                                                  ]
+                                             },
+                                  "background":  "#07141C",
+                                  "cursor":  "#2E8BC0"
+                              },
+                   "fedora":  {
+                                  "label":  "Fedora",
+                                  "short":  "fed",
+                                  "icon":  "🔵",
+                                  "accent":  "#51A2DA",
+                                  "accent2":  "#89C4F4",
+                                  "foreground":  "#F8F8F2",
+                                  "badgeText":  "FEDORA",
+                                  "note":  "Fedora Linux",
+                                  "iconsNerd":  {
+                                                    "badge":  ""
+                                                },
+                                  "detect":  {
+                                                 "osIds":  [
+                                                               "fedora"
+                                                           ],
+                                                 "idLike":  [
+                                                                "fedora"
+                                                            ],
+                                                 "hostPatterns":  [
+                                                                      "(^|[-.])fed"
+                                                                  ]
+                                             },
+                                  "background":  "#08121C",
+                                  "cursor":  "#51A2DA"
+                              },
+                   "rhel":  {
+                                "label":  "Red Hat",
+                                "short":  "rhel",
+                                "icon":  "🎩",
+                                "accent":  "#EE0000",
+                                "accent2":  "#FF4D4D",
+                                "foreground":  "#F8F8F2",
+                                "badgeText":  "RHEL",
+                                "note":  "Red Hat Enterprise Linux",
+                                "iconsNerd":  {
+                                                  "badge":  ""
+                                              },
+                                "detect":  {
+                                               "osIds":  [
+                                                             "rhel",
+                                                             "redhat"
+                                                         ],
+                                               "idLike":  [
+                                                              "rhel",
+                                                              "fedora"
+                                                          ],
+                                               "hostPatterns":  [
+                                                                    "(^|[-.])(rhel|redhat)"
+                                                                ]
+                                           },
+                                "background":  "#1B0707",
+                                "cursor":  "#FF4D4D"
+                            },
+                   "centos":  {
+                                  "label":  "CentOS",
+                                  "short":  "cen",
+                                  "icon":  "🟣",
+                                  "accent":  "#A14F9F",
+                                  "accent2":  "#D18AD1",
+                                  "foreground":  "#F8F8F2",
+                                  "badgeText":  "CENTOS",
+                                  "note":  "CentOS Stream",
+                                  "iconsNerd":  {
+                                                    "badge":  ""
+                                                },
+                                  "detect":  {
+                                                 "osIds":  [
+                                                               "centos"
+                                                           ],
+                                                 "idLike":  [
+                                                                "rhel",
+                                                                "fedora"
+                                                            ],
+                                                 "hostPatterns":  [
+                                                                      "(^|[-.])cent"
+                                                                  ]
+                                             },
+                                  "background":  "#150A18",
+                                  "cursor":  "#D18AD1"
+                              },
+                   "rocky":  {
+                                 "label":  "Rocky Linux",
+                                 "short":  "rky",
+                                 "icon":  "🪨",
+                                 "accent":  "#10B981",
+                                 "accent2":  "#6EE7B7",
+                                 "foreground":  "#F8F8F2",
+                                 "badgeText":  "ROCKY",
+                                 "note":  "Rocky Linux",
+                                 "iconsNerd":  {
+                                                   "badge":  ""
+                                               },
+                                 "detect":  {
+                                                "osIds":  [
+                                                              "rocky"
+                                                          ],
+                                                "idLike":  [
+                                                               "rhel",
+                                                               "fedora"
+                                                           ],
+                                                "hostPatterns":  [
+                                                                     "(^|[-.])rocky"
+                                                                 ]
+                                            },
+                                 "background":  "#04150E",
+                                 "cursor":  "#6EE7B7"
+                             },
+                   "alma":  {
+                                "label":  "AlmaLinux",
+                                "short":  "alma",
+                                "icon":  "🌱",
+                                "accent":  "#F59E0B",
+                                "accent2":  "#FCD34D",
+                                "foreground":  "#F8F8F2",
+                                "badgeText":  "ALMA",
+                                "note":  "AlmaLinux",
+                                "iconsNerd":  {
+                                                  "badge":  ""
+                                              },
+                                "detect":  {
+                                               "osIds":  [
+                                                             "almalinux",
+                                                             "alma"
+                                                         ],
+                                               "idLike":  [
+                                                              "rhel",
+                                                              "fedora"
+                                                          ],
+                                               "hostPatterns":  [
+                                                                    "(^|[-.])alma"
+                                                                ]
+                                           },
+                                "background":  "#1A1305",
+                                "cursor":  "#FCD34D"
+                            },
+                   "arch":  {
+                                "label":  "Arch Linux",
+                                "short":  "arch",
+                                "icon":  "🔷",
+                                "accent":  "#1793D1",
+                                "accent2":  "#33B1FF",
+                                "foreground":  "#F8F8F2",
+                                "badgeText":  "ARCH",
+                                "note":  "Arch Linux",
+                                "iconsNerd":  {
+                                                  "badge":  ""
+                                              },
+                                "detect":  {
+                                               "osIds":  [
+                                                             "arch",
+                                                             "archarm",
+                                                             "manjaro"
+                                                         ],
+                                               "idLike":  [
+                                                              "arch"
+                                                          ],
+                                               "hostPatterns":  [
+                                                                    "(^|[-.])arch"
+                                                                ]
+                                           },
+                                "background":  "#051520",
+                                "cursor":  "#33B1FF"
+                            },
+                   "opensuse":  {
+                                    "label":  "openSUSE",
+                                    "short":  "suse",
+                                    "icon":  "🦎",
+                                    "accent":  "#73BA25",
+                                    "accent2":  "#A3D977",
+                                    "foreground":  "#F8F8F2",
+                                    "badgeText":  "SUSE",
+                                    "note":  "openSUSE / SLES",
+                                    "iconsNerd":  {
+                                                      "badge":  ""
+                                                  },
+                                    "detect":  {
+                                                   "osIds":  [
+                                                                 "opensuse",
+                                                                 "opensuse-leap",
+                                                                 "opensuse-tumbleweed",
+                                                                 "sles",
+                                                                 "sle"
+                                                             ],
+                                                   "idLike":  [
+                                                                  "suse"
+                                                              ],
+                                                   "hostPatterns":  [
+                                                                        "(^|[-.])suse"
+                                                                    ]
+                                               },
+                                    "background":  "#0D1705",
+                                    "cursor":  "#A3D977"
+                                },
+                   "gentoo":  {
+                                  "label":  "Gentoo",
+                                  "short":  "gen",
+                                  "icon":  "🧬",
+                                  "accent":  "#8E7CC3",
+                                  "accent2":  "#B9A9E8",
+                                  "foreground":  "#F8F8F2",
+                                  "badgeText":  "GENTOO",
+                                  "note":  "Gentoo Linux",
+                                  "iconsNerd":  {
+                                                    "badge":  ""
+                                                },
+                                  "detect":  {
+                                                 "osIds":  [
+                                                               "gentoo"
+                                                           ],
+                                                 "idLike":  [
+                                                                "gentoo"
+                                                            ],
+                                                 "hostPatterns":  [
+                                                                      "(^|[-.])gentoo"
+                                                                  ]
+                                             },
+                                  "background":  "#110B1D",
+                                  "cursor":  "#B9A9E8"
+                              },
+                   "kali":  {
+                                "label":  "Kali",
+                                "short":  "kali",
+                                "icon":  "🐉",
+                                "accent":  "#557C94",
+                                "accent2":  "#8FB3C7",
+                                "foreground":  "#F8F8F2",
+                                "badgeText":  "KALI",
+                                "note":  "Kali Linux",
+                                "iconsNerd":  {
+                                                  "badge":  ""
+                                              },
+                                "detect":  {
+                                               "osIds":  [
+                                                             "kali"
+                                                         ],
+                                               "idLike":  [
+                                                              "debian"
+                                                          ],
+                                               "hostPatterns":  [
+                                                                    "(^|[-.])kali"
+                                                                ]
+                                           },
+                                "background":  "#0A1116",
+                                "cursor":  "#8FB3C7"
+                            },
+                   "amazon":  {
+                                  "label":  "Amazon Linux",
+                                  "short":  "amzn",
+                                  "icon":  "📦",
+                                  "accent":  "#FF9900",
+                                  "accent2":  "#FFB84D",
+                                  "foreground":  "#F8F8F2",
+                                  "badgeText":  "AMZN",
+                                  "note":  "Amazon Linux (AWS)",
+                                  "iconsNerd":  {
+                                                    "badge":  ""
+                                                },
+                                  "detect":  {
+                                                 "osIds":  [
+                                                               "amzn",
+                                                               "amazon"
+                                                           ],
+                                                 "idLike":  [
+                                                                "rhel",
+                                                                "fedora"
+                                                            ],
+                                                 "hostPatterns":  [
+                                                                      "(^|[-.])amzn"
+                                                                  ]
+                                             },
+                                  "background":  "#1A1205",
+                                  "cursor":  "#FFB84D"
+                              },
+                   "s3":  {
+                              "label":  "AWS S3",
+                              "short":  "s3",
+                              "icon":  "🪣",
+                              "accent":  "#FF9900",
+                              "accent2":  "#FFD180",
+                              "foreground":  null,
+                              "badgeText":  "S3",
+                              "note":  "Amazon S3 (tema somente em texto)",
+                              "iconsNerd":  {
+                                                "badge":  ""
+                                            },
+                              "detect":  {
+                                             "targetSchemes":  [
+                                                                   "s3://"
+                                                               ],
+                                             "hostPatterns":  [
+                                                                  "(^|[-.])s3([-.]|$)",
+                                                                  "s3[.-][a-z0-9-]*\\.amazonaws\\.com$"
+                                                              ],
+                                             "hostContains":  [
+                                                                  "s3.",
+                                                                  "s3-"
+                                                              ]
+                                         },
+                              "prompt":  {
+                                             "path":  null
+                                         }
+                          },
+                   "aws":  {
+                               "label":  "AWS",
+                               "short":  "aws",
+                               "icon":  "☁",
+                               "accent":  "#FF9900",
+                               "accent2":  "#FFC266",
+                               "foreground":  null,
+                               "badgeText":  "AWS",
+                               "note":  "AWS / EC2",
+                               "iconsNerd":  {
+                                                 "badge":  ""
+                                             },
+                               "detect":  {
+                                              "hostPatterns":  [
+                                                                   "\\.amazonaws\\.com$",
+                                                                   "^ec2-"
+                                                               ]
+                                          },
+                               "prompt":  {
+                                              "path":  null
+                                          }
+                           },
+                   "windows":  {
+                                   "label":  "Windows",
+                                   "short":  "win",
+                                   "icon":  "🪟",
+                                   "accent":  "#0078D4",
+                                   "accent2":  "#4CC2FF",
+                                   "foreground":  "#F8F8F2",
+                                   "badgeText":  "WINDOWS",
+                                   "note":  "Windows OpenSSH",
+                                   "iconsNerd":  {
+                                                     "badge":  ""
+                                                 },
+                                   "detect":  {
+                                                  "osIds":  [
+                                                                "windows"
+                                                            ],
+                                                  "uname":  [
+                                                                "Windows",
+                                                                "MINGW",
+                                                                "CYGWIN",
+                                                                "MSYS"
+                                                            ],
+                                                  "hostPatterns":  [
+                                                                       "(^|[-.])win"
+                                                                   ]
+                                              },
+                                   "background":  "#04111D",
+                                   "cursor":  "#4CC2FF"
+                               },
+                   "proxmox":  {
+                                   "label":  "Proxmox",
+                                   "short":  "pve",
+                                   "icon":  "🧱",
+                                   "accent":  "#E57000",
+                                   "accent2":  "#FFA64D",
+                                   "foreground":  "#F8F8F2",
+                                   "badgeText":  "PROXMOX",
+                                   "note":  "Proxmox VE",
+                                   "iconsNerd":  {
+                                                     "badge":  ""
+                                                 },
+                                   "detect":  {
+                                                  "osIds":  [
+                                                                "proxmox"
+                                                            ],
+                                                  "idLike":  [
+                                                                 "debian"
+                                                             ],
+                                                  "hostPatterns":  [
+                                                                       "(^|[-.])pve",
+                                                                       "(^|[-.])prox"
+                                                                   ]
+                                              },
+                                   "background":  "#1A0D02",
+                                   "cursor":  "#FFA64D"
+                               },
+                   "generic":  {
+                                   "label":  "Linux",
+                                   "short":  "nix",
+                                   "icon":  "🖥",
+                                   "accent":  "#8A8A8A",
+                                   "accent2":  "#C0C0C0",
+                                   "foreground":  null,
+                                   "badgeText":  "LINUX",
+                                   "note":  "Dispositivo Linux nao identificado",
+                                   "iconsNerd":  {
+                                                     "badge":  ""
+                                                 },
+                                   "detect":  {
+                                                  "uname":  [
+                                                                "Linux"
+                                                            ]
+                                              },
+                                   "prompt":  {
+                                                  "path":  null
+                                              }
+                               }
+               }
+}
