@@ -108,7 +108,7 @@ function Install-SshRemoteTheme {
     }
 
     Write-Host "Tema remoto '$Type' instalado em $rcPath ($($resolved.SshTarget))." -ForegroundColor DarkGray
-    Write-Host "Conecte com: sshx $Target -RemoteTheme" -ForegroundColor DarkGray
+    Write-Host "Conecte com: xsshx $Target -RemoteTheme" -ForegroundColor DarkGray
 
     if ($PassThru) {
         return [pscustomobject]@{

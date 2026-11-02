@@ -410,7 +410,7 @@ function Invoke-SshLockCommand {
     }
 
     Set-SshDeviceLock -Target $target -Type $theme | Out-Null
-    Write-SshCommandHint 'Use sshx <ip> para conectar. O lock vence a deteccao.'
+    Write-SshCommandHint 'Use xsshx <ip> para conectar. O lock vence a deteccao.'
     Write-Host ''
 }
 
@@ -752,7 +752,7 @@ function Invoke-SshResetCommand {
     }
 }
 
-function Invoke-SshxCommand {
+function Invoke-XsshxCommand {
     # Deliberately no param block: native ssh flags such as -L, -p and -l must
     # reach ssh untouched instead of being matched as PowerShell parameters.
     $Arguments = @($args)
@@ -903,11 +903,11 @@ function Show-SshHelp {
     Write-SshCommandHint '-edit theme debian'
     Write-SshCommandHint '-reset theme debian'
     Write-Host ''
-    Write-Host '  sshx' -ForegroundColor White
+    Write-Host '  xsshx' -ForegroundColor White
     Write-SshCommandHint 'conecta e aplica o tema; flags do ssh passam direto'
-    Write-SshCommandHint 'sshx -X root@10.0.0.5'
-    Write-SshCommandHint 'sshx root@10.0.0.5 -L 8080:localhost:80'
-    Write-SshCommandHint 'sshx 10.0.0.5 -Lock debian'
+    Write-SshCommandHint 'xsshx -X root@10.0.0.5'
+    Write-SshCommandHint 'xsshx root@10.0.0.5 -L 8080:localhost:80'
+    Write-SshCommandHint 'xsshx 10.0.0.5 -Lock debian'
     Write-Host ''
     Write-Host '  Exemplos: -font set "0xProto Nerd Font"   -icons path on   -color debian accent E95420' -ForegroundColor DarkGray
     Write-Host ''

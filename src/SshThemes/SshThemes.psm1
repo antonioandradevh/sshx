@@ -30,7 +30,7 @@ Get-ChildItem -Path $public -Filter '*.ps1' | Sort-Object Name | ForEach-Object 
 
 Initialize-SshThemeHome
 
-Set-Alias -Name sshx    -Value Invoke-SshxCommand  -Force
+Set-Alias -Name xsshx   -Value Invoke-XsshxCommand -Force
 Set-Alias -Name cdev    -Value Connect-SshDevice  -Force
 Set-Alias -Name awsx    -Value Start-AwsWorkspace -Force
 Set-Alias -Name s3x     -Value Start-AwsWorkspace -Force

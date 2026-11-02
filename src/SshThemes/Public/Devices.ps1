@@ -109,7 +109,7 @@ function Show-SshDevices {
     Write-Host "  Dispositivos registrados  $(Get-SshUiChar 'dot')  $($devices.Count)" -ForegroundColor DarkGray
     if ($devices.Count -eq 0) {
         Write-Host '  Nenhum ainda. Use: Register-SshDevice -Name srv01 -HostName 10.0.0.5 -User root -Type debian' -ForegroundColor DarkGray
-        Write-Host '  Ou conecte direto: sshx root@10.0.0.5' -ForegroundColor DarkGray
+        Write-Host '  Ou conecte direto: xsshx root@10.0.0.5' -ForegroundColor DarkGray
         Write-Host ''
         if ($PassThru) { return }
         return
@@ -129,7 +129,7 @@ function Show-SshDevices {
         Write-Host ('  ' + $iconPrefix + $name + $type + $target + $lockMark)
     }
     Write-Host ''
-    Write-Host '  Conecte com: sshx <nome>' -ForegroundColor DarkGray
+    Write-Host '  Conecte com: xsshx <nome>' -ForegroundColor DarkGray
     Write-Host ''
     if ($PassThru) { return $devices }
 }
@@ -143,7 +143,7 @@ function Test-SshRemoteThemeSupported {
 
 function Connect-SshDevice {
     [CmdletBinding()]
-    [Alias('sshx', 'cdev')]
+    [Alias('cdev')]
     param(
         [Parameter(Position = 0)][string]$Target,
         [string]$Type,

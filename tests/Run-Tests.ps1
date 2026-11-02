@@ -85,6 +85,8 @@ try {
     foreach ($dash in @('-font', '-icons', '-color', '-distros', '-lock', '-unlock', '-bg', '-set', '-get', '-edit', '-reset', '-help')) {
         Assert-True -Condition ((Get-Command -Name $dash -ErrorAction SilentlyContinue).CommandType -eq 'Alias') -Message ('alias ' + $dash + ' existe')
     }
+    Assert-True -Condition ((Get-Command -Name 'xsshx' -ErrorAction SilentlyContinue).CommandType -eq 'Alias') -Message 'alias xsshx existe'
+    Assert-True -Condition ($null -eq (Get-Alias -Name 'sshx' -ErrorAction SilentlyContinue)) -Message 'alias sshx antigo removido'
 
     $defaultPrompt = & $module {
         param($t, $s)
@@ -490,15 +492,15 @@ try {
     Assert-True -Condition $passThrough.DryRun -Message 'flags nativas nao quebram o dry-run'
     Assert-True -Condition ($null -eq (& $module { Get-SshArgumentValue -Arguments @('-L', '8080:localhost:80') -Names @('-l') })) -Message 'flags ssh sao case-sensitive'
 
-    $nativeDry = sshx -X debian-host -DryRun -NoBanner -PassThru
-    Assert-True -Condition ($nativeDry.DryRun) -Message 'sshx encaminha -X'
-    $nativeLogin = sshx -l root -p 2222 debian-host -DryRun -NoBanner -PassThru
-    Assert-Equal -Expected 'root' -Actual $nativeLogin.Resolved.User -Message 'sshx le -l'
-    Assert-Equal -Expected '2222' -Actual $nativeLogin.Resolved.Port -Message 'sshx le -p'
-    $nativeForward = sshx debian-host -L 8080:localhost:80 -DryRun -NoBanner -PassThru
-    Assert-True -Condition ([string]::IsNullOrEmpty($nativeForward.Resolved.User)) -Message 'sshx nao confunde -L com -l'
-    $s3Wrapper = sshx -S3 s3://demo-bucket/backups -DryRun -NoBanner -PassThru
-    Assert-Equal -Expected 's3' -Actual $s3Wrapper.Kind -Message 'sshx -S3 abre workspace'
+    $nativeDry = xsshx -X debian-host -DryRun -NoBanner -PassThru
+    Assert-True -Condition ($nativeDry.DryRun) -Message 'xsshx encaminha -X'
+    $nativeLogin = xsshx -l root -p 2222 debian-host -DryRun -NoBanner -PassThru
+    Assert-Equal -Expected 'root' -Actual $nativeLogin.Resolved.User -Message 'xsshx le -l'
+    Assert-Equal -Expected '2222' -Actual $nativeLogin.Resolved.Port -Message 'xsshx le -p'
+    $nativeForward = xsshx debian-host -L 8080:localhost:80 -DryRun -NoBanner -PassThru
+    Assert-True -Condition ([string]::IsNullOrEmpty($nativeForward.Resolved.User)) -Message 'xsshx nao confunde -L com -l'
+    $s3Wrapper = xsshx -S3 s3://demo-bucket/backups -DryRun -NoBanner -PassThru
+    Assert-Equal -Expected 's3' -Actual $s3Wrapper.Kind -Message 'xsshx -S3 abre workspace'
 
     # ------------------------------------------------------------------- json
     $json = Get-Content (Join-Path $testHome 'themes.json') -Raw -Encoding UTF8

@@ -45,7 +45,7 @@
         'Test-SshNerdFont',
         'Install-SshNerdFont',
         'Set-SshTerminalFont',
-        'Invoke-SshxCommand',
+        'Invoke-XsshxCommand',
         'Invoke-SshFontCommand',
         'Invoke-SshIconsCommand',
         'Invoke-SshColorCommand',
@@ -61,7 +61,7 @@
         'Show-SshHelp'
     )
     AliasesToExport   = @(
-        'sshx',
+        'xsshx',
         'cdev',
         'awsx',
         's3x',

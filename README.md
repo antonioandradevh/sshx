@@ -28,7 +28,7 @@ Terminal SSH com **tema por dispositivo** no PowerShell, agora em Windows, Linux
 - **Personaliza o terminal**: titulo da aba, banner e cores. No modo `auto` (padrao), temas com fundo proprio repintam foreground/background/cursor; temas sem fundo mudam so o texto.
 - **Prompt limpo**: dispositivo, `usuario@host`, diretorio, branch git, **duracao do ultimo comando** e codigo de saida. Por padrao so o **icone do sistema** aparece.
 - **Comandos com dash**: `-font`, `-icons`, `-color`, `-distros`, `-lock`, `-unlock`, `-bg`, `-set`, `-get`, `-edit`, `-reset` e `-help`.
-- **Flags nativas do ssh**: `sshx -X`, `sshx host -L 8080:localhost:80`, `sshx -l root -p 2222 host` etc. passam direto para o `ssh`.
+- **Flags nativas do ssh**: `xsshx -X`, `xsshx host -L 8080:localhost:80`, `xsshx -l root -p 2222 host` etc. passam direto para o `ssh`.
 - **Workspace S3**: `awsx s3://bucket/prefixo` abre um ambiente AWS CLI com o tema S3 e atalhos `s3ls`, `s3get`, `s3put`, `s3sync`, `s3rm`.
 - **Tema remoto no bash**: injeta automaticamente o prompt do tema no shell remoto; pode ser desligado com `-NoRemoteTheme`.
 - **Tudo configuravel**: comandos com dash, cmdlets ou edicao direta dos JSONs em `~/.sshthemes`.
@@ -97,7 +97,7 @@ O instalador:
   - Linux: `~/.local/share/fonts` (ou `$XDG_DATA_HOME/fonts`);
   - macOS: `~/Library/Fonts`;
 - no Windows, ajusta `profiles.defaults.font.face` no `settings.json` do Windows Terminal (com backup em `settings.json.sshthemes.bak`);
-- no Linux/macOS, cria `~/.local/bin/sshx` e `~/.local/bin/s3x` executaveis;
+- no Linux/macOS, cria `~/.local/bin/xsshx` e `~/.local/bin/s3x` executaveis;
 - grava os metadados em `~/.sshthemes/install.json`.
 
 Abra um novo terminal e teste:
@@ -105,28 +105,28 @@ Abra um novo terminal e teste:
 ```powershell
 -distros
 -distros debian
-sshx root@10.0.0.5 -DryRun
+xsshx root@10.0.0.5 -DryRun
 ```
 
 ## Uso rapido
 
 ```powershell
 # conectar (detecta o tipo automaticamente)
-sshx root@192.168.0.20
+xsshx root@192.168.0.20
 
 # forcar um tema quando a deteccao nao ajuda (ex.: servidor sem chave)
-sshx root@10.0.0.5 -Type debian
+xsshx root@10.0.0.5 -Type debian
 
 # travar o tema naquele IP/host
-sshx 10.0.0.5 -Lock debian
-sshx 10.0.0.5 -Unlock
+xsshx 10.0.0.5 -Lock debian
+xsshx 10.0.0.5 -Unlock
 
 # alias registrado
 Register-SshDevice -Name lab01 -HostName 10.10.10.10 -User admin -Port 2200 -Type debian -Label "Lab 01"
-sshx lab01
+xsshx lab01
 
 # ver o banner e o prompt sem conectar
-sshx lab01 -DryRun
+xsshx lab01 -DryRun
 
 # workspace S3 com tema AWS (somente texto)
 awsx s3://meu-bucket/backups
@@ -144,33 +144,33 @@ exitssh
 -help
 ```
 
-`sshx` e um wrapper: ele entende as opcoes do SshThemes e **encaminha qualquer outra flag para o ssh**. `Connect-SshDevice` continua disponivel para scripts; para flags nativas nele, use `-SshArgument`.
+`xsshx` e um wrapper: ele entende as opcoes do SshThemes e **encaminha qualquer outra flag para o ssh**. `Connect-SshDevice` continua disponivel para scripts; para flags nativas nele, use `-SshArgument`.
 
 ## Flags nativas do ssh
 
-O `sshx` aceita as flags do OpenSSH sem reinterpretar:
+O `xsshx` aceita as flags do OpenSSH sem reinterpretar:
 
 ```powershell
-sshx -X root@10.0.0.5                 # X11 forwarding
-sshx -A root@10.0.0.5                 # agent forwarding
-sshx -4 root@10.0.0.5                 # so IPv4
-sshx root@10.0.0.5 -L 8080:localhost:80
-sshx root@10.0.0.5 -R 9000:localhost:9000
-sshx root@10.0.0.5 -D 1080
-sshx -J bastion root@10.0.0.5         # ProxyJump
-sshx -o StrictHostKeyChecking=no root@10.0.0.5
-sshx -l root -p 2222 10.0.0.5         # usuario e porta no estilo ssh
-sshx -i ~/.ssh/id_ed25519 root@10.0.0.5
+xsshx -X root@10.0.0.5                 # X11 forwarding
+xsshx -A root@10.0.0.5                 # agent forwarding
+xsshx -4 root@10.0.0.5                 # so IPv4
+xsshx root@10.0.0.5 -L 8080:localhost:80
+xsshx root@10.0.0.5 -R 9000:localhost:9000
+xsshx root@10.0.0.5 -D 1080
+xsshx -J bastion root@10.0.0.5         # ProxyJump
+xsshx -o StrictHostKeyChecking=no root@10.0.0.5
+xsshx -l root -p 2222 10.0.0.5         # usuario e porta no estilo ssh
+xsshx -i ~/.ssh/id_ed25519 root@10.0.0.5
 ```
 
 As flags `-l`, `-p` e `-i` tambem sao lidas pelo SshThemes para montar o banner, a deteccao e o prompt; o restante e passado intacto.
 
-O `ssh` nativo continua funcionando normalmente (`ssh -X host`, `ssh -L ...`). Use `sshx` quando quiser o mesmo comando **com** o tema aplicado.
+O `ssh` nativo continua funcionando normalmente (`ssh -X host`, `ssh -L ...`). Use `xsshx` quando quiser o mesmo comando **com** o tema aplicado.
 
 Para um comando remoto, use `-Command`:
 
 ```powershell
-sshx root@10.0.0.5 -Command "uptime && df -h"
+xsshx root@10.0.0.5 -Command "uptime && df -h"
 ```
 
 ## Como a deteccao funciona
@@ -528,8 +528,8 @@ Set-SshSetting -TerminalMode auto
 Set-SshSetting -TerminalMode text
 Set-SshSetting -TerminalMode full
 
-sshx s3://bucket -FullTheme
-sshx debian-host -NoBackground
+xsshx s3://bucket -FullTheme
+xsshx debian-host -NoBackground
 ```
 
 As cores sao enviadas com OSC 10/11/12 e restauradas ao sair (ou com OSC 110/111/112). Funciona no Windows Terminal, VS Code e terminais com suporte a OSC.
@@ -593,8 +593,8 @@ O tema vale para o prompt e para o banner; a saida do `aws` continua com as core
 O prompt que aparece depois do login SSH vem do shell remoto, nao do PowerShell. Por isso o SshThemes injeta automaticamente um rc de bash com o tema do dispositivo na conexao (padrao: ligado).
 
 ```powershell
-sshx srv01
-sshx srv01 -NoRemoteTheme
+xsshx srv01
+xsshx srv01 -NoRemoteTheme
 Set-SshSetting -RemoteAutoTheme $false
 Install-SshRemoteTheme -Target srv01
 ```
@@ -637,22 +637,22 @@ O instalador com `-WindowsTerminal` cria um fragmento em:
 Ele adiciona o perfil **SSH Themes**, que abre o PowerShell e lista os dispositivos. Para abrir direto em um host, use a linha de comando do perfil:
 
 ```
-powershell.exe -NoLogo -NoExit -ExecutionPolicy Bypass -Command "Import-Module SshThemes; sshx srv01"
+powershell.exe -NoLogo -NoExit -ExecutionPolicy Bypass -Command "Import-Module SshThemes; xsshx srv01"
 ```
 
-Tambem existem os launchers `sshx.cmd` e `s3x.cmd` na raiz do projeto. Coloque a pasta no PATH ou crie atalhos.
+Tambem existem os launchers `xsshx.cmd` e `s3x.cmd` na raiz do projeto. Coloque a pasta no PATH ou crie atalhos.
 
 ## Linux e macOS
 
 O modulo usa `pwsh` e funciona com os mesmos comandos:
 
 ```sh
-sshx root@10.0.0.5
-sshx -X root@10.0.0.5
-sshx 10.0.0.5 -Lock debian
+xsshx root@10.0.0.5
+xsshx -X root@10.0.0.5
+xsshx 10.0.0.5 -Lock debian
 ```
 
-Os launchers `~/.local/bin/sshx` e `~/.local/bin/s3x` sao scripts `sh` que chamam o `pwsh`. Se `~/.local/bin` nao estiver no PATH:
+Os launchers `~/.local/bin/xsshx` e `~/.local/bin/s3x` sao scripts `sh` que chamam o `pwsh`. Se `~/.local/bin` nao estiver no PATH:
 
 ```sh
 export PATH="$HOME/.local/bin:$PATH"
@@ -670,8 +670,8 @@ terminal/
 ├─ Install.ps1
 ├─ Uninstall.ps1
 ├─ install.sh
-├─ sshx.cmd / s3x.cmd
-├─ bin/sshx.ps1
+├─ xsshx.cmd / s3x.cmd
+├─ bin/xsshx.ps1
 ├─ tests/Run-Tests.ps1
 └─ src/SshThemes/
    ├─ SshThemes.psd1
@@ -717,13 +717,13 @@ Os testes cobrem catalogo, overrides, deteccao por OS/hostname/S3, parsing de al
 
 **`pwsh` nao encontrado (Linux/macOS).** Rode `./install.sh` de novo; ele tenta instalar o PowerShell 7. Se falhar, instale manualmente pelo link acima.
 
-**`sshx: command not found` (Linux/macOS).** Adicione `~/.local/bin` ao PATH ou rode `./install.sh` sem `-NoLauncher`.
+**`xsshx: command not found` (Linux/macOS).** Adicione `~/.local/bin` ao PATH ou rode `./install.sh` sem `-NoLauncher`.
 
 **Ambiente S3 sem AWS CLI.** O tema e o workspace abrem, mas os comandos `s3*` falham. Instale o AWS CLI v2 e rode `aws configure`.
 
 **Tema remoto falhou.** O servidor precisa de `bash` e `base64`. Rode com `-NoRemoteTheme` para usar apenas o tema local.
 
-**Flag do ssh nao passou.** Use `sshx` (o wrapper), nao `Connect-SshDevice` diretamente. No cmdlet, flags nativas vao em `-SshArgument`.
+**Flag do ssh nao passou.** Use `xsshx` (o wrapper), nao `Connect-SshDevice` diretamente. No cmdlet, flags nativas vao em `-SshArgument`.
 
 ## Desinstalar
 
@@ -740,7 +740,7 @@ No Linux/macOS, rode com `pwsh`:
 pwsh -NoProfile -File ./Uninstall.ps1
 ```
 
-O desinstalador remove o bloco do perfil, o modulo dos diretorios de usuario, os launchers `~/.local/bin/sshx` e `~/.local/bin/s3x` (somente se foram gerados pelo SshThemes) e o fragmento do Windows Terminal. Com `-PurgeConfig`, apaga tambem `~/.sshthemes`.
+O desinstalador remove o bloco do perfil, o modulo dos diretorios de usuario, os launchers `~/.local/bin/xsshx` e `~/.local/bin/s3x` (somente se foram gerados pelo SshThemes) e o fragmento do Windows Terminal. Com `-PurgeConfig`, apaga tambem `~/.sshthemes`.
 
 No Windows, a fonte do Windows Terminal e restaurada usando o backup `settings.json.sshthemes.bak`; se nao houver backup, remove o `font.face` que o SshThemes definiu. Use `-DefaultFont <nome>` para escolher a fonte final. A fonte instalada permanece na maquina (outros apps podem usa-la).
 

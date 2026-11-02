@@ -19,7 +19,7 @@ Opcoes uteis:
   -SkipProfile       nao mexe no perfil do PowerShell
   -NoFont            nao instala Nerd Font
   -NoTerminalFont    instala a fonte, mas nao configura o terminal
-  -NoLauncher        nao cria ~/.local/bin/sshx e ~/.local/bin/s3x
+  -NoLauncher        nao cria ~/.local/bin/xsshx e ~/.local/bin/s3x
   -FontName <nome>   usa outra Nerd Font ja instalada
   -Force             reescreve o bloco do perfil
   -WindowsTerminal   ignorado fora do Windows

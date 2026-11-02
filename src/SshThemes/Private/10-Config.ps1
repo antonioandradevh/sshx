@@ -223,7 +223,7 @@ function Set-SshDeviceLock {
     $registry = Get-SshDeviceRegistry
     $key = Get-SshDeviceEntryKey -Resolved $resolved
     # Se o IP/host ja existe registrado com outro nome (alias), trava o mesmo
-    # registro para que -lock <ip> e sshx <alias> enxerguem o mesmo lock.
+    # registro para que -lock <ip> e xsshx <alias> enxerguem o mesmo lock.
     if (-not $registry.devices.Contains($key)) {
         foreach ($candidate in @($registry.devices.Keys)) {
             if ([string](Get-SshValue $registry.devices[$candidate] 'host' '') -eq $resolved.HostName) {
