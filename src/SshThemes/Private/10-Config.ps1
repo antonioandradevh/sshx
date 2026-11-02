@@ -201,10 +201,119 @@ function Save-SshSettingsData {
     Clear-SshConfigCache
 }
 
+function Get-SshDeviceEntryKey {
+    param([Parameter(Mandatory)]$Resolved)
+
+    $key = [string](Get-SshValue $Resolved 'Alias' '')
+    if ([string]::IsNullOrWhiteSpace($key)) { $key = [string](Get-SshValue $Resolved 'HostName' '') }
+    return $key
+}
+
+function Set-SshDeviceLock {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position = 0)][string]$Target,
+        [Parameter(Mandatory, Position = 1)][string]$Type
+    )
+
+    $theme = Get-SshThemeByName -Name $Type
+    $resolved = Resolve-SshTarget -Target $Target
+    if ($resolved.IsS3) { throw 'Lock nao se aplica a s3://. Use o tema s3 automaticamente.' }
+
+    $registry = Get-SshDeviceRegistry
+    $key = Get-SshDeviceEntryKey -Resolved $resolved
+    # Se o IP/host ja existe registrado com outro nome (alias), trava o mesmo
+    # registro para que -lock <ip> e sshx <alias> enxerguem o mesmo lock.
+    if (-not $registry.devices.Contains($key)) {
+        foreach ($candidate in @($registry.devices.Keys)) {
+            if ([string](Get-SshValue $registry.devices[$candidate] 'host' '') -eq $resolved.HostName) {
+                $key = $candidate
+                break
+            }
+        }
+    }
+    if (-not $registry.devices.Contains($key)) { $registry.devices[$key] = @{} }
+    $entry = $registry.devices[$key]
+
+    if (-not (Get-SshValue $entry 'host' $null)) { $entry['host'] = $resolved.HostName }
+    if ($resolved.User -and -not (Get-SshValue $entry 'user' $null)) { $entry['user'] = $resolved.User }
+    if ($resolved.Port -and -not (Get-SshValue $entry 'port' $null)) { $entry['port'] = $resolved.Port }
+
+    $entry['lockedType'] = $theme.Name
+    $entry['lockedAt'] = (Get-Date).ToString('o')
+    $entry['lock'] = $true
+    Save-SshDeviceRegistry -Document $registry
+
+    Write-Host ("  lock: " + $key + " -> " + $theme.Name + " (" + $theme.Label + ")") -ForegroundColor DarkGray
+    return [pscustomobject]@{
+        Name      = $key
+        HostName  = $resolved.HostName
+        Type      = $theme.Name
+        Label     = $theme.Label
+        LockedAt  = $entry['lockedAt']
+    }
+}
+
+function Remove-SshDeviceLock {
+    [CmdletBinding()]
+    param([Parameter(Mandatory, Position = 0)][string]$Target)
+
+    $resolved = Resolve-SshTarget -Target $Target
+    $registry = Get-SshDeviceRegistry
+    $key = Get-SshDeviceEntryKey -Resolved $resolved
+    if (-not $registry.devices.Contains($key)) {
+        foreach ($candidate in @($registry.devices.Keys)) {
+            if ([string](Get-SshValue $registry.devices[$candidate] 'host' '') -eq $resolved.HostName) {
+                $key = $candidate
+                break
+            }
+        }
+    }
+    if (-not $registry.devices.Contains($key)) {
+        Write-Host ("  nenhum lock para " + $Target + ".") -ForegroundColor Yellow
+        return $false
+    }
+
+    $entry = $registry.devices[$key]
+    if (-not (Get-SshValue $entry 'lockedType' $null) -and -not (Get-SshValue $entry 'lock' $false)) {
+        Write-Host ("  nenhum lock para " + $Target + ".") -ForegroundColor Yellow
+        return $false
+    }
+
+    foreach ($name in @('lockedType', 'lockedAt', 'lock')) {
+        if ($entry -is [System.Collections.IDictionary] -and $entry.Contains($name)) { $entry.Remove($name) }
+    }
+    Save-SshDeviceRegistry -Document $registry
+    Write-Host ("  lock removido: " + $key + ". A deteccao volta a escolher o tema.") -ForegroundColor DarkGray
+    return $true
+}
+
+function Get-SshDeviceLocks {
+    [CmdletBinding()]
+    param()
+
+    $registry = Get-SshDeviceRegistry
+    $locks = @()
+    foreach ($key in @($registry.devices.Keys)) {
+        $entry = $registry.devices[$key]
+        $type = [string](Get-SshValue $entry 'lockedType' $null)
+        if ([string]::IsNullOrWhiteSpace($type)) { continue }
+        $theme = Get-SshThemeByName -Name $type -AllowMissing
+        $locks += [pscustomobject]@{
+            Name     = $key
+            HostName = [string](Get-SshValue $entry 'host' $key)
+            Type     = $type
+            Label    = if ($theme) { $theme.Label } else { $type }
+            LockedAt = Get-SshValue $entry 'lockedAt' $null
+        }
+    }
+    return @($locks | Sort-Object -Property Name)
+}
+
 function Get-SshConfigHosts {
     if ($script:Cache.SshConfigHosts) { return $script:Cache.SshConfigHosts }
 
-    $path = Join-Path (Join-Path $HOME '.ssh') 'config'
+    $path = Join-Path (Join-Path (Get-SshHomePath) '.ssh') 'config'
     $hosts = @{}
     if (-not (Test-Path -LiteralPath $path)) {
         $script:Cache.SshConfigHosts = $hosts

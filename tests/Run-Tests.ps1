@@ -6,7 +6,7 @@ param([switch]$Keep)
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$modulePath = Join-Path $repoRoot 'src\SshThemes\SshThemes.psd1'
+$modulePath = Join-Path (Join-Path $repoRoot 'src') (Join-Path 'SshThemes' 'SshThemes.psd1')
 $testHome = Join-Path ([System.IO.Path]::GetTempPath()) ('sshthemes-tests-' + [guid]::NewGuid().ToString('N'))
 
 $previousHome = $env:SSHTHEMES_HOME
@@ -55,8 +55,10 @@ Write-Host "Home de teste: $testHome" -ForegroundColor DarkGray
 Write-Host ''
 
 try {
+    Remove-Module SshThemes -Force -ErrorAction SilentlyContinue
     Import-Module $modulePath -Force -WarningAction SilentlyContinue
-    $module = Get-Module SshThemes
+    $module = Get-Module SshThemes | Where-Object { $_.Path -eq $modulePath } | Select-Object -First 1
+    if (-not $module) { $module = Get-Module SshThemes | Select-Object -First 1 }
     Assert-True -Condition ($null -ne $module) -Message 'modulo importado'
 
     # ------------------------------------------------------------------ themes
@@ -80,8 +82,8 @@ try {
     Assert-Equal -Expected 'False' -Actual (Get-SshSetting 'path.icons') -Message 'icones de diretorio ocultos por padrao'
     $localTheme = Get-SshTheme local
     Assert-Equal -Expected ([string][char]0xF17A) -Actual $localTheme.IconsNerd.badge -Message 'sessao local usa o icone do Windows'
-    foreach ($slash in @('/font', '/icons', '/color', '/distros', '/help')) {
-        Assert-True -Condition ((Get-Command $slash -ErrorAction SilentlyContinue).CommandType -eq 'Alias') -Message ('alias ' + $slash + ' existe')
+    foreach ($dash in @('-font', '-icons', '-color', '-distros', '-lock', '-unlock', '-bg', '-set', '-get', '-edit', '-reset', '-help')) {
+        Assert-True -Condition ((Get-Command -Name $dash -ErrorAction SilentlyContinue).CommandType -eq 'Alias') -Message ('alias ' + $dash + ' existe')
     }
 
     $defaultPrompt = & $module {
@@ -396,19 +398,107 @@ try {
     $fontAfter = Get-Content -LiteralPath $fontSettings -Raw | ConvertFrom-Json
     Assert-Equal -Expected 'Consolas' -Actual $fontAfter.profiles.defaults.font.face -Message 'desinstalador aceita -DefaultFont'
 
-    # ------------------------------------------------------------------ slash
+    # ------------------------------------------------------------- dash commands
     Invoke-SshIconsCommand 'path' 'on' 6>$null
-    Assert-Equal -Expected 'True' -Actual (Get-SshSetting 'prompt.iconParts.path') -Message '/icons path on'
+    Assert-Equal -Expected 'True' -Actual (Get-SshSetting 'prompt.iconParts.path') -Message '-icons path on'
     Invoke-SshIconsCommand 'reset' 6>$null
-    Assert-Equal -Expected 'False' -Actual (Get-SshSetting 'prompt.iconParts.path') -Message '/icons reset'
+    Assert-Equal -Expected 'False' -Actual (Get-SshSetting 'prompt.iconParts.path') -Message '-icons reset'
     Invoke-SshColorCommand 'debian' 'accent' 'E95420' 6>$null
-    Assert-Equal -Expected '#E95420' -Actual (Get-SshTheme debian).Accent -Message '/color aceita hex sem #'
+    Assert-Equal -Expected '#E95420' -Actual (Get-SshTheme debian).Accent -Message '-color aceita hex sem #'
     Invoke-SshColorCommand 'reset' 'debian' 6>$null
-    Assert-Equal -Expected '#A81D33' -Actual (Get-SshTheme debian).Accent -Message '/color reset'
+    Assert-Equal -Expected '#A81D33' -Actual (Get-SshTheme debian).Accent -Message '-color reset'
     Invoke-SshDistrosCommand 'set' 'debian' 6>$null
-    Assert-Equal -Expected 'debian' -Actual (Get-SshSetting 'defaultTheme') -Message '/distros set'
+    Assert-Equal -Expected 'debian' -Actual (Get-SshSetting 'defaultTheme') -Message '-distros set'
     Invoke-SshDistrosCommand 6>$null
-    Assert-True -Condition $true -Message '/distros lista sem erro'
+    Assert-True -Condition $true -Message '-distros lista sem erro'
+
+    # ---------------------------------------------------------------- background
+    Invoke-SshBackgroundCommand 'debian' 'off' 6>$null
+    Assert-True -Condition ($null -eq (Get-SshTheme debian).Background) -Message '-bg debian off remove o fundo'
+    Invoke-SshBackgroundCommand 'debian' '123456' 6>$null
+    Assert-Equal -Expected '#123456' -Actual (Get-SshTheme debian).Background -Message '-bg debian <hex> define o fundo'
+    Invoke-SshBackgroundCommand 'debian' 'reset' 6>$null
+    Assert-Equal -Expected '#1B0A0F' -Actual (Get-SshTheme debian).Background -Message '-bg debian reset volta ao padrao'
+    Invoke-SshBackgroundCommand 'off' 6>$null
+    Assert-Equal -Expected 'text' -Actual (Get-SshSetting 'terminal.mode') -Message '-bg off desliga o fundo do terminal'
+    Invoke-SshBackgroundCommand 'auto' 6>$null
+    Assert-Equal -Expected 'auto' -Actual (Get-SshSetting 'terminal.mode') -Message '-bg auto volta ao modo auto'
+
+    # ----------------------------------------------------------------- set / get
+    Invoke-SshSetCommand 'theme' 'debian' 'prompt.path' '#FFFFFF' 6>$null
+    Assert-Equal -Expected '#FFFFFF' -Actual (Get-SshThemeValue -Name debian -Path 'prompt.path') -Message '-set theme altera campo aninhado'
+    Invoke-SshSetCommand 'setting' 'terminal.mode' 'text' 6>$null
+    Assert-Equal -Expected 'text' -Actual (Get-SshSetting 'terminal.mode') -Message '-set setting altera configuracao'
+    Invoke-SshSetCommand 'prompt.separator' '|' 6>$null
+    Assert-Equal -Expected '|' -Actual (Get-SshSetting 'prompt.separator') -Message '-set <caminho> <valor> atalho'
+    Invoke-SshSetCommand 'device' 'lab02' 'label' 'Lab 02' 6>$null
+    Assert-Equal -Expected 'Lab 02' -Actual (Get-SshDevice lab02).Label -Message '-set device altera campo do dispositivo'
+    Remove-SshDevice -Name lab02 -Force
+    Invoke-SshResetCommand 'theme' 'debian' 6>$null
+    Assert-Equal -Expected '#A81D33' -Actual (Get-SshTheme debian).Accent -Message '-reset theme restaura o tema'
+    Invoke-SshResetCommand 'settings' 6>$null
+    Assert-Equal -Expected 'auto' -Actual (Get-SshSetting 'terminal.mode') -Message '-reset settings restaura configuracoes'
+    Invoke-SshGetCommand 'setting' 'terminal.mode' 6>$null
+    Assert-True -Condition $true -Message '-get setting nao lanca excecao'
+    Invoke-SshGetCommand 'theme' 'debian' 'prompt.path' 6>$null
+    Assert-True -Condition $true -Message '-get theme nao lanca excecao'
+    Show-SshHelp 6>$null
+    Assert-True -Condition $true -Message '-help nao lanca excecao'
+
+    # -------------------------------------------------------------------- locks
+    Invoke-SshLockCommand '10.9.9.9' 'ubuntu' 6>$null
+    $locks = @(Get-SshDeviceLocks)
+    Assert-Equal -Expected 1 -Actual $locks.Count -Message '-lock grava o lock'
+    Assert-Equal -Expected 'ubuntu' -Actual $locks[0].Type -Message '-lock usa o tema pedido'
+    $lockedDevice = Get-SshDevice '10.9.9.9'
+    Assert-True -Condition $lockedDevice.Locked -Message '-lock marca o dispositivo'
+    $lockedType = Resolve-SshDeviceType -Target '10.9.9.9' -NoProbe
+    Assert-Equal -Expected 'ubuntu' -Actual $lockedType.Type -Message 'lock vence a deteccao'
+    Assert-Equal -Expected 'lock' -Actual $lockedType.Source -Message 'origem do tipo e lock'
+    Invoke-SshLockCommand '10.9.9.9' 6>$null
+    Invoke-SshUnlockCommand '10.9.9.9' 6>$null
+    Assert-Equal -Expected 0 -Actual (@(Get-SshDeviceLocks)).Count -Message '-unlock remove o lock'
+    Remove-SshDevice -Name '10.9.9.9' -Force
+
+    Register-SshDevice -Name 'locked01' -HostName '10.9.9.8' -Type debian
+    Set-SshDeviceLock -Target 'locked01' -Type alpine
+    $lockedAlias = Resolve-SshDeviceType -Target 'locked01' -NoProbe
+    Assert-Equal -Expected 'alpine' -Actual $lockedAlias.Type -Message 'lock por alias vence o tipo salvo'
+    Remove-SshDeviceLock -Target 'locked01'
+    Remove-SshDevice -Name 'locked01' -Force
+
+    Register-SshDevice -Name 'lockip01' -HostName '10.9.9.7' -Type debian
+    Set-SshDeviceLock -Target '10.9.9.7' -Type ubuntu
+    $lockedByIp = Resolve-SshDeviceType -Target 'lockip01' -NoProbe
+    Assert-Equal -Expected 'ubuntu' -Actual $lockedByIp.Type -Message 'lock por IP vale para o alias registrado'
+    Assert-Equal -Expected 1 -Actual (@(Get-SshDeviceLocks)).Count -Message 'lock por IP nao duplica o registro'
+    Remove-SshDeviceLock -Target '10.9.9.7'
+    Remove-SshDevice -Name 'lockip01' -Force
+
+    Register-SshDevice -Name 'reg01' -HostName '10.9.9.6' -Type alpine
+    $registered = Resolve-SshDeviceType -Target 'reg01' -NoProbe
+    Assert-Equal -Expected 'alpine' -Actual $registered.Type -Message 'tipo registrado vence a deteccao'
+    Assert-Equal -Expected 'device' -Actual $registered.Source -Message 'origem do tipo e device'
+    $refreshed = Resolve-SshDeviceType -Target 'reg01' -NoProbe -Refresh
+    Assert-Equal -Expected 'generic' -Actual $refreshed.Type -Message '-Refresh ignora o tipo registrado'
+    Remove-SshDevice -Name 'reg01' -Force
+
+    # ------------------------------------------------------------ ssh pass-through
+    Assert-Equal -Expected '2222' -Actual (& $module { Get-SshArgumentValue -Arguments @('-X', '-p', '2222', '-l', 'root') -Names @('-p') }) -Message 'le -p das flags nativas'
+    Assert-True -Condition (& $module { Test-SshArgumentPresent -Arguments @('-L', '8080:localhost:80') -Names @('-L') }) -Message 'detecta -L nas flags nativas'
+    $passThrough = Connect-SshDevice -Target 'debian-host' -Type debian -DryRun -NoBanner -PassThru -SshArgument @('-X', '-L', '8080:localhost:80')
+    Assert-True -Condition $passThrough.DryRun -Message 'flags nativas nao quebram o dry-run'
+    Assert-True -Condition ($null -eq (& $module { Get-SshArgumentValue -Arguments @('-L', '8080:localhost:80') -Names @('-l') })) -Message 'flags ssh sao case-sensitive'
+
+    $nativeDry = sshx -X debian-host -DryRun -NoBanner -PassThru
+    Assert-True -Condition ($nativeDry.DryRun) -Message 'sshx encaminha -X'
+    $nativeLogin = sshx -l root -p 2222 debian-host -DryRun -NoBanner -PassThru
+    Assert-Equal -Expected 'root' -Actual $nativeLogin.Resolved.User -Message 'sshx le -l'
+    Assert-Equal -Expected '2222' -Actual $nativeLogin.Resolved.Port -Message 'sshx le -p'
+    $nativeForward = sshx debian-host -L 8080:localhost:80 -DryRun -NoBanner -PassThru
+    Assert-True -Condition ([string]::IsNullOrEmpty($nativeForward.Resolved.User)) -Message 'sshx nao confunde -L com -l'
+    $s3Wrapper = sshx -S3 s3://demo-bucket/backups -DryRun -NoBanner -PassThru
+    Assert-Equal -Expected 's3' -Actual $s3Wrapper.Kind -Message 'sshx -S3 abre workspace'
 
     # ------------------------------------------------------------------- json
     $json = Get-Content (Join-Path $testHome 'themes.json') -Raw -Encoding UTF8

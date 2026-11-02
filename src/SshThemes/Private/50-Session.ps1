@@ -55,8 +55,8 @@ function Get-SshPromptState {
         }
     }
 
-    $userName = $env:USERNAME
-    $hostName = $env:COMPUTERNAME
+    $userName = Get-SshUserName
+    $hostName = Get-SshMachineName
     $deviceLabel = $theme.BadgeText
     $targetLabel = ''
 
@@ -98,12 +98,13 @@ function Start-SshSession {
         [Parameter(Mandatory)]$Session,
         [Parameter(Mandatory)]$Theme,
         [Parameter(Mandatory)]$Settings,
-        [switch]$Full
+        [switch]$Full,
+        [switch]$NoBackground
     )
 
     $icon = Get-SshThemeIcon -Theme $Theme -Settings $Settings
     $title = if ($icon) { "$icon $($Theme.Label) - $($Session.Label)" } else { "$($Theme.Label) - $($Session.Label)" }
-    $terminalState = Push-SshTerminalTheme -Theme $Theme -Settings $Settings -Title $title -Full:$Full
+    $terminalState = Push-SshTerminalTheme -Theme $Theme -Settings $Settings -Title $title -Full:$Full -NoBackground:$NoBackground
     if ($Session.PSObject.Properties['TerminalState']) { $Session.TerminalState = $terminalState }
     else { $Session | Add-Member -NotePropertyName TerminalState -NotePropertyValue $terminalState }
     $script:Session = $Session

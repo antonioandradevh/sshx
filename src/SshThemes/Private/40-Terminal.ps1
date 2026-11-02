@@ -63,9 +63,11 @@ function Test-SshTerminalFull {
     param(
         [Parameter(Mandatory)]$Theme,
         [Parameter(Mandatory)]$Settings,
-        [switch]$Full
+        [switch]$Full,
+        [switch]$NoBackground
     )
 
+    if ($NoBackground) { return $false }
     $mode = [string](Get-SshValue (Get-SshValue $Settings 'terminal' @{}) 'mode' 'auto')
     if ($Full -or $mode -eq 'full') { return $true }
     if ($mode -eq 'auto' -and $Theme.Background) { return $true }
@@ -77,7 +79,8 @@ function Set-SshTerminalAppearance {
         [Parameter(Mandatory)]$Theme,
         [Parameter(Mandatory)]$Settings,
         [string]$Title,
-        [switch]$Full
+        [switch]$Full,
+        [switch]$NoBackground
     )
 
     $state = @{
@@ -93,7 +96,7 @@ function Set-SshTerminalAppearance {
 
     try { $state.Title = [string]$Host.UI.RawUI.WindowTitle } catch { }
 
-    $useFull = Test-SshTerminalFull -Theme $Theme -Settings $Settings -Full:$Full
+    $useFull = Test-SshTerminalFull -Theme $Theme -Settings $Settings -Full:$Full -NoBackground:$NoBackground
 
     if ($useFull) {
         if ($Theme.Foreground) { Write-SshOsc -Code 10 -Value $Theme.Foreground }
@@ -137,10 +140,11 @@ function Push-SshTerminalTheme {
         [Parameter(Mandatory)]$Theme,
         [Parameter(Mandatory)]$Settings,
         [string]$Title,
-        [switch]$Full
+        [switch]$Full,
+        [switch]$NoBackground
     )
 
-    $state = Set-SshTerminalAppearance -Theme $Theme -Settings $Settings -Title $Title -Full:$Full
+    $state = Set-SshTerminalAppearance -Theme $Theme -Settings $Settings -Title $Title -Full:$Full -NoBackground:$NoBackground
     $script:TerminalStack.Push($state)
     return $state
 }

@@ -158,7 +158,7 @@ function Format-SshPath {
     $style = [string](Get-SshValue $pathSettings 'style' 'smart')
     $maxSegments = [int](Get-SshValue $pathSettings 'maxSegments' 4)
     $homeAlias = [string](Get-SshValue $pathSettings 'homeAlias' '~')
-    $homePath = $HOME
+    $homePath = Get-SshHomePath
 
     $display = $Path.Replace('\', '/')
     $homeNormalized = $homePath.Replace('\', '/').TrimEnd('/')
@@ -310,7 +310,7 @@ function Format-SshBanner {
     $hostValue = [string]$Resolved.HostName
     if ($Resolved.Port -and $Mode -ne 's3') { $hostValue = "$hostValue`:$($Resolved.Port)" }
     $rows += ,@('host', $hostValue)
-    $userValue = if ($Resolved.User) { [string]$Resolved.User } else { $env:USERNAME }
+    $userValue = if ($Resolved.User) { [string]$Resolved.User } else { Get-SshUserName }
     if ($Mode -ne 's3') { $rows += ,@('usuario', $userValue) }
 
     $systemName = ''
@@ -358,8 +358,8 @@ function Format-SshPromptText {
         [string]$Path = '',
         [string]$DeviceLabel,
         [string]$TargetLabel,
-        [string]$UserName = $env:USERNAME,
-        [string]$HostName = $env:COMPUTERNAME,
+        [string]$UserName = (Get-SshUserName),
+        [string]$HostName = (Get-SshMachineName),
         [string]$GitBranch = '',
         $Duration = $null,
         [int]$ExitCode = 0,

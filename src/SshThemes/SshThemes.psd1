@@ -15,6 +15,9 @@
         'Get-SshSession',
         'Get-SshTheme',
         'Set-SshTheme',
+        'Set-SshThemeValue',
+        'Get-SshThemeValue',
+        'Remove-SshThemeValue',
         'New-SshTheme',
         'Remove-SshTheme',
         'Show-SshThemes',
@@ -30,6 +33,9 @@
         'Enable-SshThemePrompt',
         'Disable-SshThemePrompt',
         'Resolve-SshDeviceType',
+        'Set-SshDeviceLock',
+        'Remove-SshDeviceLock',
+        'Get-SshDeviceLocks',
         'Reload-SshConfig',
         'Edit-SshConfig',
         'Install-SshRemoteTheme',
@@ -39,11 +45,20 @@
         'Test-SshNerdFont',
         'Install-SshNerdFont',
         'Set-SshTerminalFont',
+        'Invoke-SshxCommand',
         'Invoke-SshFontCommand',
         'Invoke-SshIconsCommand',
         'Invoke-SshColorCommand',
         'Invoke-SshDistrosCommand',
-        'Show-SshSlashHelp'
+        'Invoke-SshLockCommand',
+        'Invoke-SshUnlockCommand',
+        'Invoke-SshBackgroundCommand',
+        'Invoke-SshSetCommand',
+        'Invoke-SshGetCommand',
+        'Invoke-SshEditCommand',
+        'Invoke-SshResetCommand',
+        'Show-SshLocks',
+        'Show-SshHelp'
     )
     AliasesToExport   = @(
         'sshx',
@@ -51,11 +66,20 @@
         'awsx',
         's3x',
         'exitssh',
-        '/font',
-        '/icons',
-        '/color',
-        '/distros',
-        '/help'
+        '-font',
+        '-icons',
+        '-color',
+        '-distros',
+        '-lock',
+        '-unlock',
+        '-locks',
+        '-bg',
+        '-background',
+        '-set',
+        '-get',
+        '-edit',
+        '-reset',
+        '-help'
     )
     PrivateData       = @{
         PSData = @{

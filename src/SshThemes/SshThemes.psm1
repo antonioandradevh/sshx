@@ -30,14 +30,23 @@ Get-ChildItem -Path $public -Filter '*.ps1' | Sort-Object Name | ForEach-Object 
 
 Initialize-SshThemeHome
 
-Set-Alias -Name sshx    -Value Connect-SshDevice  -Force
+Set-Alias -Name sshx    -Value Invoke-SshxCommand  -Force
 Set-Alias -Name cdev    -Value Connect-SshDevice  -Force
 Set-Alias -Name awsx    -Value Start-AwsWorkspace -Force
 Set-Alias -Name s3x     -Value Start-AwsWorkspace -Force
 Set-Alias -Name exitssh -Value Exit-SshDevice     -Force
 
-Set-Alias -Name '/font'    -Value Invoke-SshFontCommand    -Force
-Set-Alias -Name '/icons'   -Value Invoke-SshIconsCommand   -Force
-Set-Alias -Name '/color'   -Value Invoke-SshColorCommand   -Force
-Set-Alias -Name '/distros' -Value Invoke-SshDistrosCommand -Force
-Set-Alias -Name '/help'    -Value Show-SshSlashHelp        -Force
+Set-Alias -Name '-font'       -Value Invoke-SshFontCommand       -Force
+Set-Alias -Name '-icons'      -Value Invoke-SshIconsCommand      -Force
+Set-Alias -Name '-color'      -Value Invoke-SshColorCommand      -Force
+Set-Alias -Name '-distros'    -Value Invoke-SshDistrosCommand    -Force
+Set-Alias -Name '-lock'       -Value Invoke-SshLockCommand       -Force
+Set-Alias -Name '-unlock'     -Value Invoke-SshUnlockCommand     -Force
+Set-Alias -Name '-locks'      -Value Invoke-SshLockCommand       -Force
+Set-Alias -Name '-bg'         -Value Invoke-SshBackgroundCommand -Force
+Set-Alias -Name '-background' -Value Invoke-SshBackgroundCommand -Force
+Set-Alias -Name '-set'        -Value Invoke-SshSetCommand        -Force
+Set-Alias -Name '-get'        -Value Invoke-SshGetCommand        -Force
+Set-Alias -Name '-edit'       -Value Invoke-SshEditCommand       -Force
+Set-Alias -Name '-reset'      -Value Invoke-SshResetCommand      -Force
+Set-Alias -Name '-help'       -Value Show-SshHelp                -Force

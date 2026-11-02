@@ -51,6 +51,34 @@ function Split-SshTarget {
     return $result
 }
 
+function Get-SshArgumentValue {
+    param(
+        [string[]]$Arguments,
+        [Parameter(Mandatory)][string[]]$Names
+    )
+
+    if (-not $Arguments -or $Arguments.Count -eq 0) { return $null }
+    for ($i = 0; $i -lt $Arguments.Count; $i++) {
+        $argument = [string]$Arguments[$i]
+        if ($Names -cnotcontains $argument) { continue }
+        if ($i + 1 -lt $Arguments.Count) { return [string]$Arguments[$i + 1] }
+    }
+    return $null
+}
+
+function Test-SshArgumentPresent {
+    param(
+        [string[]]$Arguments,
+        [Parameter(Mandatory)][string[]]$Names
+    )
+
+    if (-not $Arguments) { return $false }
+    foreach ($argument in $Arguments) {
+        if ($Names -ccontains [string]$argument) { return $true }
+    }
+    return $false
+}
+
 function Resolve-SshTarget {
     param(
         [Parameter(Mandatory)][string]$Target,
@@ -402,6 +430,50 @@ function Resolve-SshDeviceType {
     $settings = Get-SshSettings
     $cacheDays = [int](Get-SshValue (Get-SshValue $settings 'detect' @{}) 'cacheDays' 30)
     $entry = $resolved.Entry
+
+    # Um lock vence cache e sonda: o usuario decidiu o tema daquele IP.
+    $lockedType = $null
+    if ($entry) { $lockedType = Get-SshValue $entry 'lockedType' $null }
+    if ($lockedType) {
+        $catalog = Get-SshThemeCatalog
+        if ($catalog.Contains($lockedType)) {
+            $theme = $catalog[$lockedType]
+            return [pscustomobject]@{
+                Type     = $lockedType
+                Label    = $theme.Label
+                Icon     = $theme.Icon
+                Accent   = $theme.Accent
+                Source   = 'lock'
+                Score    = 1000
+                Info     = @{ Target = $resolved.Raw; HostName = $resolved.HostName }
+                Theme    = $theme
+                Resolved = $resolved
+            }
+        }
+    }
+
+    # Tipo definido no registro (Register-SshDevice/-Type ou -set device type)
+    # vence a deteccao, mas perde para -Type e para o lock.
+    $registeredType = $null
+    if ($entry) { $registeredType = [string](Get-SshValue $entry 'type' $null) }
+    if ($registeredType -and $registeredType -ne 'auto' -and -not $Refresh) {
+        $catalog = Get-SshThemeCatalog
+        if ($catalog.Contains($registeredType)) {
+            $theme = $catalog[$registeredType]
+            return [pscustomobject]@{
+                Type     = $registeredType
+                Label    = $theme.Label
+                Icon     = $theme.Icon
+                Accent   = $theme.Accent
+                Source   = 'device'
+                Score    = 200
+                Info     = @{ Target = $resolved.Raw; HostName = $resolved.HostName }
+                Theme    = $theme
+                Resolved = $resolved
+            }
+        }
+    }
+
     $cachedType = $null
     if ($entry) { $cachedType = Get-SshValue $entry 'detectedType' $null }
 

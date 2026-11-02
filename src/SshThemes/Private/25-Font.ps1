@@ -1,4 +1,6 @@
-# Nerd Font discovery, per-user installation and Windows Terminal font setup.
+# Nerd Font discovery and installation for Windows, Linux and macOS.
+# Windows Terminal font wiring is Windows-only; other terminals are configured
+# by the user, but the font file is installed in the right per-user directory.
 
 $script:SshNerdFontCatalog = [ordered]@{
     Name      = 'JetBrainsMono Nerd Font'
@@ -28,23 +30,39 @@ function Get-SshNerdFontInfo {
 function Get-SshFontFamilyName {
     param([Parameter(Mandatory)][string]$Path)
 
-    try {
-        Add-Type -AssemblyName System.Drawing -ErrorAction Stop
-        $collection = New-Object System.Drawing.Text.PrivateFontCollection
+    if (Test-SshWindows) {
         try {
-            $collection.AddFontFile($Path)
-            if ($collection.Families.Count -gt 0) { return $collection.Families[0].Name }
+            Add-Type -AssemblyName System.Drawing -ErrorAction Stop
+            $collection = New-Object System.Drawing.Text.PrivateFontCollection
+            try {
+                $collection.AddFontFile($Path)
+                if ($collection.Families.Count -gt 0) { return $collection.Families[0].Name }
+            }
+            finally {
+                $collection.Dispose()
+            }
         }
-        finally {
-            $collection.Dispose()
-        }
+        catch { }
     }
-    catch { }
-    return $null
+
+    if (Get-Command fc-scan -ErrorAction SilentlyContinue) {
+        try {
+            $family = (& fc-scan --format '%{family}\n' $Path 2>$null | Select-Object -First 1)
+            if ($family) { return ([string]$family -split ',')[0].Trim() }
+        }
+        catch { }
+    }
+
+    $name = [System.IO.Path]::GetFileNameWithoutExtension($Path)
+    $name = $name -replace '-(Regular|Bold|Italic|Light|Medium|SemiBold|ExtraBold|Thin)$', ''
+    $name = $name -replace '[-_]', ' '
+    return $name.Trim()
 }
 
 function Get-SshFontRegistryEntries {
     param([ValidateSet('User', 'Machine')][string]$Scope = 'User')
+
+    if (-not (Test-SshWindows)) { return @() }
 
     $path = if ($Scope -eq 'User') {
         'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Fonts'
@@ -83,29 +101,51 @@ function Get-SshNerdFont {
     param()
 
     $fonts = @()
-    $fonts += Get-SshFontRegistryEntries -Scope User
-    $fonts += Get-SshFontRegistryEntries -Scope Machine
 
-    $userFontDir = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Fonts'
-    if (Test-Path -LiteralPath $userFontDir) {
-        $known = @($fonts | ForEach-Object { $_.Path })
-        Get-ChildItem -LiteralPath $userFontDir -File -ErrorAction SilentlyContinue |
-            Where-Object { $_.Extension -in @('.ttf', '.otf') } |
-            Where-Object { $_.Name -match 'NerdFont|Nerd Font' } |
-            ForEach-Object {
-                if ($known -contains $_.FullName) { return }
-                $family = Get-SshFontFamilyName -Path $_.FullName
-                if (-not $family) { return }
-                $fonts += [pscustomobject]@{
-                    Name   = $family
-                    Path   = $_.FullName
-                    Scope  = 'User'
-                    Exists = $true
+    if (Test-SshWindows) {
+        $fonts += Get-SshFontRegistryEntries -Scope User
+        $fonts += Get-SshFontRegistryEntries -Scope Machine
+
+        $userFontDir = Get-SshFontDirectory
+        if (Test-Path -LiteralPath $userFontDir) {
+            $known = @($fonts | ForEach-Object { $_.Path })
+            Get-ChildItem -LiteralPath $userFontDir -File -ErrorAction SilentlyContinue |
+                Where-Object { $_.Extension -in @('.ttf', '.otf') } |
+                Where-Object { $_.Name -match 'NerdFont|Nerd Font' } |
+                ForEach-Object {
+                    if ($known -contains $_.FullName) { return }
+                    $family = Get-SshFontFamilyName -Path $_.FullName
+                    if (-not $family) { return }
+                    $fonts += [pscustomobject]@{
+                        Name   = $family
+                        Path   = $_.FullName
+                        Scope  = 'User'
+                        Exists = $true
+                    }
                 }
-            }
+        }
+    }
+    else {
+        foreach ($dir in (Get-SshFontSearchDirectories)) {
+            if (-not (Test-Path -LiteralPath $dir)) { continue }
+            Get-ChildItem -LiteralPath $dir -Recurse -File -ErrorAction SilentlyContinue |
+                Where-Object { $_.Extension -in @('.ttf', '.otf') } |
+                Where-Object { $_.Name -match 'NerdFont|Nerd Font|NF' } |
+                ForEach-Object {
+                    $family = Get-SshFontFamilyName -Path $_.FullName
+                    if (-not $family) { return }
+                    $scope = if ($_.FullName.StartsWith((Get-SshHomePath), [System.StringComparison]::OrdinalIgnoreCase)) { 'User' } else { 'Machine' }
+                    $fonts += [pscustomobject]@{
+                        Name   = $family
+                        Path   = $_.FullName
+                        Scope  = $scope
+                        Exists = $true
+                    }
+                }
+        }
     }
 
-    $fonts = @($fonts | Where-Object { $_.Exists } | Sort-Object -Property Name -Unique)
+    $fonts = @($fonts | Where-Object { $_.Exists } | Sort-Object -Property Name, Path -Unique)
     $ranked = @()
     foreach ($font in $fonts) {
         $rank = [array]::IndexOf($script:SshNerdFontPreference, $font.Name)
@@ -135,6 +175,8 @@ function Test-SshNerdFont {
 
 function Register-SshFontFile {
     param([Parameter(Mandatory)][string]$Path)
+
+    if (-not (Test-SshWindows)) { return }
 
     $family = Get-SshFontFamilyName -Path $Path
     if (-not $family) { $family = [System.IO.Path]::GetFileNameWithoutExtension($Path) }
@@ -180,16 +222,16 @@ function Install-SshNerdFont {
     }
 
     $catalog = Get-SshNerdFontInfo
-    $fontDir = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Fonts'
+    $fontDir = Get-SshFontDirectory
 
     if ($DryRun) {
         Write-Host ("  [dry-run] instalaria " + $catalog.Name + " em " + $fontDir) -ForegroundColor DarkGray
         Write-Host ("  [dry-run] baixaria " + $catalog.Url) -ForegroundColor DarkGray
         if ($PassThru) {
             return [pscustomobject]@{
-                Name  = $catalog.Name
-                Path  = (Join-Path $fontDir $catalog.FileName)
-                Scope = 'User'
+                Name   = $catalog.Name
+                Path   = (Join-Path $fontDir $catalog.FileName)
+                Scope  = 'User'
                 DryRun = $true
             }
         }
@@ -214,11 +256,13 @@ function Install-SshNerdFont {
         Register-SshFontFile -Path $destination
     }
 
+    Update-SshFontCache
+
     $regular = Join-Path $fontDir $catalog.FileName
     $family = Get-SshFontFamilyName -Path $regular
     if (-not $family) { $family = $catalog.Name }
 
-    Write-Host ("  Nerd Font instalada: " + $family) -ForegroundColor Green
+    Write-Host ("  Nerd Font instalada: " + $family + " (" + $fontDir + ")") -ForegroundColor Green
 
     if ($PassThru) {
         return [pscustomobject]@{
@@ -230,6 +274,8 @@ function Install-SshNerdFont {
 }
 
 function Get-SshTerminalSettingsPath {
+    if (-not (Test-SshWindows)) { return $null }
+    if (-not $env:LOCALAPPDATA) { return $null }
     $candidates = @(
         (Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json'),
         (Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json'),
@@ -250,6 +296,13 @@ function Set-SshTerminalFont {
         [switch]$DryRun,
         [switch]$PassThru
     )
+
+    if (-not (Test-SshWindows)) {
+        $hint = if (Test-SshMacOS) { 'Terminal.app/iTerm2: escolha a Nerd Font manualmente nas preferencias.' } else { 'Configure a Nerd Font no seu terminal (GNOME Terminal, Konsole, Alacritty, kitty, etc.).' }
+        Write-Host ('  fonte do terminal nao pode ser alterada automaticamente neste sistema. ' + $hint) -ForegroundColor DarkGray
+        if ($PassThru) { return [pscustomobject]@{ Path = $null; Face = $Name; Reset = [bool]$Reset; Skipped = $true } }
+        return
+    }
 
     $settingsPath = Get-SshTerminalSettingsPath
 

@@ -4,7 +4,7 @@ function Get-SshThemeHome {
     if ($env:SSHTHEMES_HOME -and -not [string]::IsNullOrWhiteSpace($env:SSHTHEMES_HOME)) {
         return $env:SSHTHEMES_HOME
     }
-    return (Join-Path $HOME '.sshthemes')
+    return (Join-Path (Get-SshHomePath) '.sshthemes')
 }
 
 function Get-SshModuleConfigPath {
@@ -76,7 +76,8 @@ function Write-SshJsonFile {
 
     $json = $Object | ConvertTo-Json -Depth 30
     if ($null -eq $json) { $json = '{}' }
-    $encoding = New-Object System.Text.UTF8Encoding($true)
+    # Windows PowerShell 5.1 needs the BOM to read the file as UTF-8.
+    $encoding = New-Object System.Text.UTF8Encoding((Test-SshWindows))
     [System.IO.File]::WriteAllText($Path, $json + [Environment]::NewLine, $encoding)
 }
 

@@ -16,7 +16,7 @@ function Register-SshDevice {
     )
 
     if ($Type -and $Type -ne 'auto' -and -not (Get-SshThemeByName -Name $Type -AllowMissing)) {
-        throw "Tema/tipo '$Type' nao existe. Use Show-SshThemes."
+        throw "Tema/tipo '$Type' nao existe. Use -distros para listar."
     }
 
     $registry = Get-SshDeviceRegistry
@@ -57,7 +57,9 @@ function Get-SshDevice {
         elseif ($key -ne $Name) { continue }
 
         $entry = $registry.devices[$key]
+        $lockedType = [string](Get-SshValue $entry 'lockedType' $null)
         $type = Get-SshValue $entry 'type' $null
+        if ($lockedType) { $type = $lockedType }
         if (-not $type) { $type = Get-SshValue $entry 'detectedType' 'auto' }
         $result += [pscustomobject]@{
             PSTypeName   = 'SshThemes.Device'
@@ -66,6 +68,9 @@ function Get-SshDevice {
             User         = [string](Get-SshValue $entry 'user' '')
             Port         = Get-SshValue $entry 'port' $null
             Type         = [string]$type
+            Locked       = [bool]($lockedType)
+            LockedType   = $lockedType
+            LockedAt     = Get-SshValue $entry 'lockedAt' $null
             Label        = [string](Get-SshValue $entry 'label' $key)
             SshAlias     = [string](Get-SshValue $entry 'sshAlias' '')
             Tags         = @(Get-SshValue $entry 'tags' @())
@@ -120,7 +125,8 @@ function Show-SshDevices {
         if ($device.Port) { $target = "$target`:$($device.Port)" }
         $name = Pad-SshText $device.Name 18
         $type = Pad-SshText $device.Type 10
-        Write-Host ('  ' + $iconPrefix + $name + $type + $target)
+        $lockMark = if ($device.Locked) { ' [lock]' } else { '' }
+        Write-Host ('  ' + $iconPrefix + $name + $type + $target + $lockMark)
     }
     Write-Host ''
     Write-Host '  Conecte com: sshx <nome>' -ForegroundColor DarkGray
@@ -147,7 +153,10 @@ function Connect-SshDevice {
         [string]$Profile,
         [string]$Region,
         [string]$Command,
-        [string[]]$SshArgument,
+        [string]$Lock,
+        [switch]$Unlock,
+        [switch]$NoBackground,
+        [Parameter(ValueFromRemainingArguments = $true)][string[]]$SshArgument,
         [switch]$NoDetect,
         [switch]$Refresh,
         [switch]$RemoteTheme,
@@ -164,7 +173,32 @@ function Connect-SshDevice {
     }
 
     if ($Target -match '^s3://') {
-        return (Start-AwsWorkspace -Target $Target -Profile $Profile -Region $Region -DryRun:$DryRun -NoBanner:$NoBanner -FullTheme:$FullTheme -PassThru:$PassThru)
+        return (Start-AwsWorkspace -Target $Target -Profile $Profile -Region $Region -DryRun:$DryRun -NoBanner:$NoBanner -FullTheme:$FullTheme -NoBackground:$NoBackground -PassThru:$PassThru)
+    }
+
+    if ($Unlock) {
+        if (-not $DryRun) { Remove-SshDeviceLock -Target $Target | Out-Null }
+        if ([string]::IsNullOrWhiteSpace($Lock)) { return }
+    }
+
+    if ($Lock) {
+        if (-not $DryRun) { Set-SshDeviceLock -Target $Target -Type $Lock | Out-Null }
+        if (-not $Type) { $Type = $Lock }
+    }
+
+    # Native ssh flags are forwarded untouched; these few are also read so the
+    # banner and the detection probe use the same user/port/key.
+    if (-not $User) {
+        $userArg = Get-SshArgumentValue -Arguments $SshArgument -Names @('-l')
+        if ($userArg) { $User = $userArg }
+    }
+    if (-not $Port) {
+        $portArg = Get-SshArgumentValue -Arguments $SshArgument -Names @('-p')
+        if ($portArg -match '^\d+$') { $Port = [int]$portArg }
+    }
+    if (-not $IdentityFile) {
+        $identityArg = Get-SshArgumentValue -Arguments $SshArgument -Names @('-i')
+        if ($identityArg) { $IdentityFile = $identityArg }
     }
 
     $resolved = Resolve-SshTarget -Target $Target -User $User -Port $Port -IdentityFile $IdentityFile
@@ -224,7 +258,7 @@ function Connect-SshDevice {
         Write-Host ''
         Write-Host ('  prompt com tema ' + $theme.Label + ':') -ForegroundColor DarkGray
         $previewPath = (Get-Location).Path
-        $line = Format-SshPromptText -Theme $theme -Settings $settings -Path $previewPath -DeviceLabel $theme.BadgeText -UserName $(if ($resolved.User) { $resolved.User } else { $env:USERNAME }) -HostName $resolved.HostName -GitBranch (Get-SshGitBranch -Path $previewPath) -Duration ([timespan]::FromMilliseconds(128)) -ExitCode 0 -Success $true
+        $line = Format-SshPromptText -Theme $theme -Settings $settings -Path $previewPath -DeviceLabel $theme.BadgeText -UserName $(if ($resolved.User) { $resolved.User } else { Get-SshUserName }) -HostName $resolved.HostName -GitBranch (Get-SshGitBranch -Path $previewPath) -Duration ([timespan]::FromMilliseconds(128)) -ExitCode 0 -Success $true
         Write-Host $line
         Write-Host ''
         $remoteLabel = if ($useRemoteTheme) { 'sim (bash)' } elseif ($NoRemoteTheme) { 'nao (-NoRemoteTheme)' } elseif ($Command) { 'nao (-Command)' } else { 'nao' }
@@ -241,8 +275,12 @@ function Connect-SshDevice {
     if (-not $sshCommand) { throw 'Cliente ssh nao encontrado no PATH. Instale o OpenSSH Client.' }
 
     $sshArguments = @()
-    if ($resolved.Port) { $sshArguments += @('-p', [string]$resolved.Port) }
-    if ($resolved.IdentityFile) { $sshArguments += @('-i', $resolved.IdentityFile) }
+    if ($resolved.Port -and -not (Test-SshArgumentPresent -Arguments $SshArgument -Names @('-p'))) {
+        $sshArguments += @('-p', [string]$resolved.Port)
+    }
+    if ($resolved.IdentityFile -and -not (Test-SshArgumentPresent -Arguments $SshArgument -Names @('-i'))) {
+        $sshArguments += @('-i', $resolved.IdentityFile)
+    }
     if ($SshArgument) { $sshArguments += $SshArgument }
 
     if ($useRemoteTheme) {
@@ -263,7 +301,7 @@ function Connect-SshDevice {
     $exitCode = 0
     $startedAt = Get-Date
     try {
-        Start-SshSession -Session $session -Theme $theme -Settings $settings -Full:$FullTheme | Out-Null
+        Start-SshSession -Session $session -Theme $theme -Settings $settings -Full:$FullTheme -NoBackground:$NoBackground | Out-Null
         if ($showBanner) {
             foreach ($line in (Format-SshBanner -Theme $theme -Settings $settings -Resolved $resolved -TypeResult $typeResult -Mode 'ssh')) {
                 Write-Host $line
@@ -304,6 +342,7 @@ function Start-AwsWorkspace {
         [string]$Region,
         [string]$EndpointUrl,
         [switch]$FullTheme,
+        [switch]$NoBackground,
         [switch]$DryRun,
         [switch]$NoBanner,
         [switch]$PassThru
@@ -482,7 +521,7 @@ function Start-AwsWorkspace {
         }
     } -Force
 
-    Start-SshSession -Session $session -Theme $theme -Settings $settings -Full:$FullTheme | Out-Null
+    Start-SshSession -Session $session -Theme $theme -Settings $settings -Full:$FullTheme -NoBackground:$NoBackground | Out-Null
 
     if ($showBanner) {
         foreach ($line in (Format-SshBanner -Theme $theme -Settings $settings -Resolved $resolved -TypeResult $typeResult -Mode 's3')) {

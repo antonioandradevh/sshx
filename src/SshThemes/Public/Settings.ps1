@@ -72,21 +72,25 @@ function Set-SshSetting {
         [bool]$TerminalResetOnExit,
         [bool]$PromptEnabled,
         [bool]$PromptIcons,
+        [bool]$DeviceName,
         [bool]$Multiline,
         [string]$Separator,
         [string]$ArrowSpace,
         [bool]$Banner,
         [bool]$Summary,
         [int]$BannerWidth,
+        [bool]$TerminalTitle,
         [int]$DurationWarnMs,
         [int]$DurationSlowMs,
         [int]$DurationPrecision,
         [ValidateSet('smart', 'full', 'leaf')][string]$PathStyle,
         [int]$MaxPathSegments,
         [bool]$PathIcons,
+        [string]$HomeAlias,
         [string]$ClockFormat,
         [bool]$DetectProbe,
         [int]$DetectTimeoutSeconds,
+        [int]$CacheDays,
         [bool]$DetectStrictHostKeys,
         [hashtable]$Show,
         [hashtable]$Icons,
@@ -98,6 +102,7 @@ function Set-SshSetting {
         [string]$S3EndpointUrl,
         [string]$RemoteShell,
         [bool]$RemoteAutoTheme,
+        [string]$RemoteRcPath,
         [switch]$Reset,
         [switch]$PassThru
     )
@@ -122,6 +127,9 @@ function Set-SshSetting {
     if ($PSBoundParameters.ContainsKey('PromptEnabled')) { $data['prompt'] = @{ enabled = $PromptEnabled } }
     if ($PSBoundParameters.ContainsKey('PromptIcons')) {
         $data['prompt'] = Merge-SshDeep -Base (Get-SshValue $data 'prompt' @{}) -Override @{ icons = $PromptIcons }
+    }
+    if ($PSBoundParameters.ContainsKey('DeviceName')) {
+        $data['prompt'] = Merge-SshDeep -Base (Get-SshValue $data 'prompt' @{}) -Override @{ deviceName = $DeviceName }
     }
     if ($PSBoundParameters.ContainsKey('Multiline')) {
         $data['prompt'] = Merge-SshDeep -Base (Get-SshValue $data 'prompt' @{}) -Override @{ multiline = $Multiline }
@@ -148,6 +156,9 @@ function Set-SshSetting {
     if ($PSBoundParameters.ContainsKey('TerminalMode')) {
         $data['terminal'] = Merge-SshDeep -Base (Get-SshValue $data 'terminal' @{}) -Override @{ mode = $TerminalMode }
     }
+    if ($PSBoundParameters.ContainsKey('TerminalTitle')) {
+        $data['terminal'] = Merge-SshDeep -Base (Get-SshValue $data 'terminal' @{}) -Override @{ title = $TerminalTitle }
+    }
     if ($PSBoundParameters.ContainsKey('TerminalResetOnExit')) {
         $data['terminal'] = Merge-SshDeep -Base (Get-SshValue $data 'terminal' @{}) -Override @{ resetOnExit = $TerminalResetOnExit }
     }
@@ -164,21 +175,23 @@ function Set-SshSetting {
         $data['duration'] = $duration
     }
 
-    if ($PSBoundParameters.ContainsKey('PathStyle') -or $PSBoundParameters.ContainsKey('MaxPathSegments') -or $PSBoundParameters.ContainsKey('PathIcons') -or $DirectoryIcons) {
+    if ($PSBoundParameters.ContainsKey('PathStyle') -or $PSBoundParameters.ContainsKey('MaxPathSegments') -or $PSBoundParameters.ContainsKey('PathIcons') -or $PSBoundParameters.ContainsKey('HomeAlias') -or $DirectoryIcons) {
         $path = @{}
         if ($PSBoundParameters.ContainsKey('PathStyle')) { $path['style'] = $PathStyle }
         if ($PSBoundParameters.ContainsKey('MaxPathSegments')) { $path['maxSegments'] = $MaxPathSegments }
         if ($PSBoundParameters.ContainsKey('PathIcons')) { $path['icons'] = $PathIcons }
+        if ($PSBoundParameters.ContainsKey('HomeAlias')) { $path['homeAlias'] = $HomeAlias }
         if ($DirectoryIcons) { $path['directoryIcons'] = $DirectoryIcons }
         $data['path'] = $path
     }
 
     if ($PSBoundParameters.ContainsKey('ClockFormat')) { $data['clock'] = @{ format = $ClockFormat } }
 
-    if ($PSBoundParameters.ContainsKey('DetectProbe') -or $PSBoundParameters.ContainsKey('DetectTimeoutSeconds') -or $PSBoundParameters.ContainsKey('DetectStrictHostKeys')) {
+    if ($PSBoundParameters.ContainsKey('DetectProbe') -or $PSBoundParameters.ContainsKey('DetectTimeoutSeconds') -or $PSBoundParameters.ContainsKey('CacheDays') -or $PSBoundParameters.ContainsKey('DetectStrictHostKeys')) {
         $detect = @{}
         if ($PSBoundParameters.ContainsKey('DetectProbe')) { $detect['probe'] = $DetectProbe }
         if ($PSBoundParameters.ContainsKey('DetectTimeoutSeconds')) { $detect['timeoutSeconds'] = $DetectTimeoutSeconds }
+        if ($PSBoundParameters.ContainsKey('CacheDays')) { $detect['cacheDays'] = $CacheDays }
         if ($PSBoundParameters.ContainsKey('DetectStrictHostKeys')) { $detect['strictHostKeys'] = $DetectStrictHostKeys }
         $data['detect'] = $detect
     }
@@ -199,6 +212,9 @@ function Set-SshSetting {
     if ($PSBoundParameters.ContainsKey('RemoteShell')) { $data['remote'] = Merge-SshDeep -Base (Get-SshValue $data 'remote' @{}) -Override @{ shell = $RemoteShell } }
     if ($PSBoundParameters.ContainsKey('RemoteAutoTheme')) {
         $data['remote'] = Merge-SshDeep -Base (Get-SshValue $data 'remote' @{}) -Override @{ auto = $RemoteAutoTheme }
+    }
+    if ($PSBoundParameters.ContainsKey('RemoteRcPath')) {
+        $data['remote'] = Merge-SshDeep -Base (Get-SshValue $data 'remote' @{}) -Override @{ rcPath = $RemoteRcPath }
     }
 
     if ($data.Count -eq 0) { throw 'Nenhuma configuracao informada.' }
@@ -268,5 +284,5 @@ function Edit-SshConfig {
     $path = Get-SshUserConfigPath "$Name.json"
     Write-Host "Editando $path" -ForegroundColor DarkGray
     Write-Host 'Depois de salvar, rode: Reload-SshConfig' -ForegroundColor DarkGray
-    Start-Process -FilePath notepad.exe -ArgumentList "`"$path`""
+    Open-SshTextFile -Path $path
 }

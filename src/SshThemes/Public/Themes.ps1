@@ -171,7 +171,7 @@ function New-SshTheme {
         accent     = $Accent
         accent2    = if ($Accent2) { $Accent2 } else { $Accent }
         foreground = $Foreground
-        background = if ($Background) { $Background } else { $null }
+        background = if ($Background -and $Background -ne 'none') { $Background } else { $null }
         badgeText  = if ($BadgeText) { $BadgeText } else { $Name.ToUpperInvariant() }
         note       = $Note
     }
@@ -257,8 +257,8 @@ function Show-SshThemes {
     }
 
     Write-Host ''
-    Write-Host '  Personalize: Set-SshTheme -Name debian -Accent "#FF0000" -Icon "..."' -ForegroundColor DarkGray
-    Write-Host '  Teste visual: Preview-SshTheme -Name debian' -ForegroundColor DarkGray
+    Write-Host '  Personalize: -color debian accent E95420   -bg debian off   -set theme debian prompt.path "#FFFFFF"' -ForegroundColor DarkGray
+    Write-Host '  Teste visual: -distros debian   Editar: -edit theme debian' -ForegroundColor DarkGray
     Write-Host ''
 
     if ($PassThru) { return @($catalog.Values) }
@@ -303,7 +303,7 @@ function Preview-SshTheme {
             if ($Plain) { Write-Host (Remove-SshAnsi $line) } else { Write-Host $line }
         }
 
-        $samplePath = Join-Path (Join-Path $HOME 'projetos') 'sshthemes'
+        $samplePath = Join-Path (Join-Path (Get-SshHomePath) 'projetos') 'sshthemes'
         $promptLine = Format-SshPromptText `
             -Theme $theme `
             -Settings $previewSettings `
@@ -329,6 +329,51 @@ function Preview-SshTheme {
     }
 }
 
+function Get-SshThemeValue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position = 0)][string]$Name,
+        [Parameter(Position = 1)][string]$Path
+    )
+
+    $theme = Get-SshThemeByName -Name $Name
+    if ([string]::IsNullOrWhiteSpace($Path)) { return $theme }
+    return (Get-SshNestedValue -Object $theme.Data -Path $Path -Default $null)
+}
+
+function Set-SshThemeValue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position = 0)][string]$Name,
+        [Parameter(Mandatory, Position = 1)][string]$Path,
+        [Parameter(Position = 2)]$Value
+    )
+
+    $theme = Get-SshThemeByName -Name $Name
+    $data = @{}
+    Set-SshNestedValue -Object $data -Path $Path -Value $Value
+    Save-SshThemeData -Name $Name -Data $data
+    Write-Host ("  tema " + $theme.Name + ": " + $Path + " = " + $(if ($null -eq $Value) { 'null' } else { [string]$Value })) -ForegroundColor DarkGray
+}
+
+function Remove-SshThemeValue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position = 0)][string]$Name,
+        [Parameter(Mandatory, Position = 1)][string]$Path
+    )
+
+    $doc = Get-SshUserThemeDocument
+    if (-not $doc.themes.Contains($Name)) { return }
+    Remove-SshNestedValue -Object $doc.themes[$Name] -Path $Path
+    if ($doc.themes[$Name] -is [System.Collections.IDictionary] -and $doc.themes[$Name].Count -eq 0) {
+        $doc.themes.Remove($Name)
+    }
+    Write-SshJsonFile -Path (Get-SshUserConfigPath 'themes.json') -Object $doc
+    Clear-SshConfigCache
+    Write-Host ("  tema " + $Name + ": " + $Path + " voltou ao padrao.") -ForegroundColor DarkGray
+}
+
 function Edit-SshTheme {
     [CmdletBinding()]
     param(
@@ -348,6 +393,6 @@ function Edit-SshTheme {
     Write-Host "Edite o objeto .themes.$Name e rode: Reload-SshConfig" -ForegroundColor DarkGray
 
     if (-not $NoLaunch) {
-        Start-Process -FilePath notepad.exe -ArgumentList "`"$path`""
+        Open-SshTextFile -Path $path
     }
 }
